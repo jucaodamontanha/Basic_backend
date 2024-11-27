@@ -5,9 +5,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 
 
 @Entity
@@ -20,7 +20,8 @@ public class TarefasModel {
     private String tecnico;
     private String supervisor;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date dataFinal;
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dataFinal;
     private  String observacao;
     private  Boolean status;
 
@@ -28,7 +29,7 @@ public class TarefasModel {
     }
 
     public TarefasModel(Long id, int numeroContrato, String cidade,
-                        String tecnico, String supervisor, Date dataFinal, String observacao, Boolean status) {
+                        String tecnico, String supervisor, LocalDate dataFinal, String observacao, Boolean status) {
         this.id = id;
         this.numeroContrato = numeroContrato;
         this.cidade = cidade;
@@ -39,14 +40,10 @@ public class TarefasModel {
         this.status = status;
     }
 
+
     public Long getId() {
         return id;
     }
-    public String getDataFinalFormatada() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        return sdf.format(dataFinal);
-    }
-
 
     public void setId(Long id) {
         this.id = id;
@@ -84,11 +81,11 @@ public class TarefasModel {
         this.supervisor = supervisor;
     }
 
-    public Date getDataFinal() {
+    public LocalDate getDataFinal() {
         return dataFinal;
     }
 
-    public void setDataFinal(Date dataFinal) {
+    public void setDataFinal(LocalDate dataFinal) {
         this.dataFinal = dataFinal;
     }
 
