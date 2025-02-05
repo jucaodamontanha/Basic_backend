@@ -5,12 +5,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import java.util.Objects;
+
 @Entity
 public class CadastroModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String nomeClompleto;
+    private String nomeCompleto;
     private String login;
     private String senha;
     private String email;
@@ -19,13 +21,27 @@ public class CadastroModel {
     public CadastroModel() {
     }
 
-    public CadastroModel(Long id, String nomeClompleto, String login, String senha, String email, String funcao) {
+    public CadastroModel(Long id, String nomeCompleto, String login, String senha, String email, String funcao) {
         this.id = id;
-        this.nomeClompleto = nomeClompleto;
+        this.nomeCompleto = nomeCompleto;
         this.login = login;
         this.senha = senha;
         this.email = email;
         this.funcao = funcao;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        CadastroModel that = (CadastroModel) o;
+        return Objects.equals(id, that.id) && Objects.equals(nomeCompleto, that.nomeCompleto) &&
+                Objects.equals(login, that.login) && Objects.equals(senha, that.senha) &&
+                Objects.equals(email, that.email) && Objects.equals(funcao, that.funcao);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, nomeCompleto, login, senha, email, funcao);
     }
 
     public Long getId() {
@@ -36,12 +52,12 @@ public class CadastroModel {
         this.id = id;
     }
 
-    public String getNomeClompleto() {
-        return nomeClompleto;
+    public String getNomeCompleto() {
+        return nomeCompleto;
     }
 
-    public void setNomeClompleto(String nomeClompleto) {
-        this.nomeClompleto = nomeClompleto;
+    public void setNomeCompleto(String nomeCompleto) {
+        this.nomeCompleto = nomeCompleto;
     }
 
     public String getLogin() {
@@ -60,11 +76,11 @@ public class CadastroModel {
         this.senha = senha;
     }
 
-    public  String getEmail() {
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail( String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 
@@ -74,5 +90,17 @@ public class CadastroModel {
 
     public void setFuncao(String funcao) {
         this.funcao = funcao;
+    }
+
+    @Override
+    public String toString() {
+        return "CadastroModel{" +
+                "id=" + id +
+                ", nomeCompleto='" + nomeCompleto + '\'' +
+                ", login='" + login + '\'' +
+                ", senha='" + senha + '\'' +
+                ", email='" + email + '\'' +
+                ", funcao=" + funcao +
+                '}';
     }
 }

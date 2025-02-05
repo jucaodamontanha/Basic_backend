@@ -15,20 +15,20 @@ public class TarefasModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int numeroContrato;
+    private Long numeroContrato;
     private String cidade;
     private String tecnico;
     private String supervisor;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataFinal;
-    private  String observacao;
-    private  Boolean status;
+    private String observacao;
+    private Boolean status;
 
     public TarefasModel() {
     }
 
-    public TarefasModel(Long id, int numeroContrato, String cidade,
+    public TarefasModel(Long id, Long numeroContrato, String cidade,
                         String tecnico, String supervisor, LocalDate dataFinal, String observacao, Boolean status) {
         this.id = id;
         this.numeroContrato = numeroContrato;
@@ -40,6 +40,19 @@ public class TarefasModel {
         this.status = status;
     }
 
+    @Override
+    public String toString() {
+        return "TarefasModel{" +
+                "id=" + id +
+                ", numeroContrato=" + numeroContrato +
+                ", cidade='" + cidade + '\'' +
+                ", tecnico='" + tecnico + '\'' +
+                ", supervisor='" + supervisor + '\'' +
+                ", dataFinal=" + dataFinal +
+                ", observacao='" + observacao + '\'' +
+                ", status=" + status +
+                '}';
+    }
 
     public Long getId() {
         return id;
@@ -49,11 +62,11 @@ public class TarefasModel {
         this.id = id;
     }
 
-    public int getNumeroContrato() {
+    public Long getNumeroContrato() {
         return numeroContrato;
     }
 
-    public void setNumeroContrato(int numeroContrato) {
+    public void setNumeroContrato(Long numeroContrato) {
         this.numeroContrato = numeroContrato;
     }
 
