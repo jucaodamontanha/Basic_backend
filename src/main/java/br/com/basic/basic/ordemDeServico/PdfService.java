@@ -9,9 +9,8 @@ import com.itextpdf.text.Image;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List; // Certifique-se de usar esta importação para listas genéricas
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
@@ -19,7 +18,7 @@ import com.itextpdf.text.pdf.*;
 @Service
 public class PdfService {
 
-    public ByteArrayOutputStream gerarPdf(OrdermDeServicoModel ordemDeServicoModel) throws DocumentException, IOException {
+    public ByteArrayOutputStream gerarPdf(OrdermDeServicoModel ordemDeServicoModel, List<String> fotosBase64) throws DocumentException, IOException {
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, out);
@@ -30,7 +29,7 @@ public class PdfService {
         String logoPath = "C:\\Users\\jucao\\Desktop\\Basic_backend\\src\\main\\resources\\assets\\logoBasic.jpg"; // Substitua pelo caminho da sua logo
         Image logo = Image.getInstance(logoPath);
         logo.setAlignment(Element.ALIGN_CENTER);
-        logo.scaleToFit(100, 100); // Ajuste o tamanho conforme necessário
+        logo.scaleToFit(100, 100); // Ajusta o tamanho conforme necessário
         document.add(logo);
 
         // Estilização de fontes
@@ -72,32 +71,34 @@ public class PdfService {
 
         document.add(table);
 
-        // Adiciona a imagem da assinatura
+        // Adiciona a assinatura
         if (ordemDeServicoModel.getAssinatura() != null && !ordemDeServicoModel.getAssinatura().isEmpty()) {
-            String assinaturaBase64 = ordemDeServicoModel.getAssinatura().replaceFirst("^data:image/[^;]+;base64,", "");
-            byte[] assinaturaBytes = Base64.getDecoder().decode(assinaturaBase64);
-            Image assinatura = Image.getInstance(assinaturaBytes);
-            assinatura.setAlignment(Element.ALIGN_CENTER);
-            document.add(new Paragraph("Assinatura:", titleFont));
-            document.add(assinatura);
+            try {
+                String assinaturaBase64 = ordemDeServicoModel.getAssinatura().replaceFirst("^data:image/[^;]+;base64,", "");
+                byte[] assinaturaBytes = Base64.getDecoder().decode(assinaturaBase64);
+                Image assinatura = Image.getInstance(assinaturaBytes);
+                assinatura.setAlignment(Element.ALIGN_CENTER);
+                assinatura.scaleToFit(200, 100); // Ajusta o tamanho da assinatura
+                document.add(new Paragraph("Assinatura:", titleFont));
+                document.add(assinatura);
+            } catch (Exception e) {
+                System.err.println("Erro ao processar a assinatura: " + e.getMessage());
+            }
         }
 
         // Adiciona as fotos do atendimento
-        if (ordemDeServicoModel.getFotos() != null) {
-            for (String foto : ordemDeServicoModel.getFotos()) {
-                if (foto.startsWith("data:image/")) {
-                    String fotoBase64 = foto.replaceFirst("^data:image/[^;]+;base64,", "");
-                    byte[] fotoBytes = Base64.getDecoder().decode(fotoBase64);
-                    Image image = Image.getInstance(fotoBytes);
-                    image.setAlignment(Element.ALIGN_CENTER);
+        if (fotosBase64 != null) {
+            for (String fotoBase64 : fotosBase64) {
+                try {
+                    String fotoData = fotoBase64.replaceFirst("^data:image/[^;]+;base64,", "");
+                    byte[] fotoBytes = Base64.getDecoder().decode(fotoData);
+                    Image foto = Image.getInstance(fotoBytes);
+                    foto.setAlignment(Element.ALIGN_CENTER);
+                    foto.scaleToFit(300, 200); // Ajusta o tamanho da foto
                     document.add(new Paragraph("Foto:", titleFont));
-                    document.add(image);
-                } else if (foto.startsWith("file:///")) {
-                    byte[] fotoBytes = Files.readAllBytes(Paths.get(foto.replaceFirst("file:///", "")));
-                    Image image = Image.getInstance(fotoBytes);
-                    image.setAlignment(Element.ALIGN_CENTER);
-                    document.add(new Paragraph("Foto:", titleFont));
-                    document.add(image);
+                    document.add(foto);
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar a foto: " + e.getMessage());
                 }
             }
         }
@@ -105,4 +106,5 @@ public class PdfService {
         document.close();
         return out;
     }
+
 }

@@ -23,7 +23,6 @@ public class OrdermDeServicoModel {
     private String tipoAtendimento;
     private String observacao;
     private String assinatura;
-    private List<String> fotos;
 
     public OrdermDeServicoModel() {
     }
@@ -46,7 +45,6 @@ public class OrdermDeServicoModel {
         this.tipoAtendimento = tipoAtendimento;
         this.observacao = observacao;
         this.assinatura = assinatura;
-        this.fotos = fotos;
     }
 
     @Override
@@ -64,7 +62,6 @@ public class OrdermDeServicoModel {
                 ", tipoAtendimento='" + tipoAtendimento + '\'' +
                 ", observacao='" + observacao + '\'' +
                 ", assinatura='" + assinatura + '\'' +
-                ", fotos=" + fotos +
                 '}';
     }
 
@@ -164,11 +161,4 @@ public class OrdermDeServicoModel {
         this.assinatura = assinatura;
     }
 
-    public List<String> getFotos() {
-        return fotos;
-    }
-
-    public void setFotos(List<String> fotos) {
-        this.fotos = fotos;
-    }
 }
