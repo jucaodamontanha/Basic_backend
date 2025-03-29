@@ -26,11 +26,15 @@ public class PdfService {
         document.open();
 
         // Adiciona a logo
-        String logoPath = "https://github.com/jucaodamontanha/Basic_backend/blob/28032d12b58378c70613703cbee7bbcbd818c841/src/main/resources/assets/logoBasic.jpg"; // caminho da sua logo
-        Image logo = Image.getInstance(logoPath);
-        logo.setAlignment(Element.ALIGN_CENTER);
-        logo.scaleToFit(100, 100); // Ajusta o tamanho conforme necessário
-        document.add(logo);
+        try {
+            String logoPath = "src/main/resources/assets/logoBasic.jpg"; // Substitua pelo caminho da sua logo
+            Image logo = Image.getInstance(logoPath);
+            logo.setAlignment(Element.ALIGN_CENTER);
+            logo.scaleToFit(100, 100); // Ajusta o tamanho conforme necessário
+            document.add(logo);
+        } catch (Exception e) {
+            System.err.println("Erro ao carregar a logo: " + e.getMessage());
+        }
 
         // Estilização de fontes
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, BaseColor.BLACK);
