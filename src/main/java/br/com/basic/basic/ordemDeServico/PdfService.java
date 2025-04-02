@@ -27,7 +27,7 @@ public class PdfService {
 
         // Adiciona a logo
         try {
-            String logoPath = "src/main/resources/assets/logoBasic.jpg"; // Substitua pelo caminho da sua logo
+            String logoPath = "Basic_backend/src/main/resources/assets/logoBasic.jpg"; // Substitua pelo caminho da sua logo
             Image logo = Image.getInstance(logoPath);
             logo.setAlignment(Element.ALIGN_CENTER);
             logo.scaleToFit(100, 100); // Ajusta o tamanho conforme necessário
