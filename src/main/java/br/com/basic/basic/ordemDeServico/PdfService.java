@@ -27,7 +27,7 @@ public class PdfService {
 
         // Adiciona a logo
         try {
-            String logoPath = "https://github.com/jucaodamontanha/Basic_backend/blob/28032d12b58378c70613703cbee7bbcbd818c841/src/main/resources/assets/logoBasic.jpg"; // Substitua pelo caminho da sua logo
+            String logoPath = "../../resources/assets/logoBasic.jpg"; // Substitua pelo caminho da sua logo
             Image logo = Image.getInstance(logoPath);
             logo.setAlignment(Element.ALIGN_CENTER);
             logo.scaleToFit(100, 100); // Ajusta o tamanho conforme necessário
