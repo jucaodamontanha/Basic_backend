@@ -10,7 +10,7 @@ import com.itextpdf.text.Image;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
-import java.util.List; // Certifique-se de usar esta importação para listas genéricas
+import java.util.List;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
@@ -90,21 +90,26 @@ public class PdfService {
             }
         }
 
-        // Adiciona as fotos do atendimento
+        // Adiciona as fotos do atendimento lado a lado
         if (fotosBase64 != null) {
+            PdfPTable fotosTable = new PdfPTable(2); // 2 colunas para as fotos
+            fotosTable.setWidthPercentage(100);
+            fotosTable.setSpacingBefore(10f);
+            fotosTable.setSpacingAfter(10f);
+
             for (String fotoBase64 : fotosBase64) {
                 try {
                     String fotoData = fotoBase64.replaceFirst("^data:image/[^;]+;base64,", "");
                     byte[] fotoBytes = Base64.getDecoder().decode(fotoData);
                     Image foto = Image.getInstance(fotoBytes);
-                    foto.setAlignment(Element.ALIGN_CENTER);
                     foto.scaleToFit(300, 200); // Ajusta o tamanho da foto
-                    document.add(new Paragraph("Foto:", titleFont));
-                    document.add(foto);
+                    fotosTable.addCell(foto);
                 } catch (Exception e) {
                     System.err.println("Erro ao processar a foto: " + e.getMessage());
                 }
             }
+
+            document.add(fotosTable);
         }
 
         document.close();
