@@ -1,119 +1,156 @@
 package br.com.basic.basic.ordemDeServico;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
-import com.itextpdf.text.Image;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
-
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
 
 @Service
 public class PdfService {
 
-    public ByteArrayOutputStream gerarPdf(OrdermDeServicoModel ordemDeServicoModel, List<String> fotosBase64) throws DocumentException, IOException {
-        Document document = new Document();
+    public ByteArrayOutputStream gerarPdf(OrdermDeServicoModel ordem, List<String> fotosBase64) throws DocumentException, IOException {
+        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PdfWriter.getInstance(document, out);
-
+        PdfWriter writer = PdfWriter.getInstance(document, out);
         document.open();
 
-        // Adiciona a logo
-        try {
-            String logoPath = "https://github.com/jucaodamontanha/Basic_backend/blob/main/src/main/resources/assets/logoBasic.jpg"; // Substitua pelo caminho da sua logo
-            Image logo = Image.getInstance(logoPath);
-            logo.setAlignment(Element.ALIGN_CENTER);
-            logo.scaleToFit(100, 100); // Ajusta o tamanho conforme necessário
-            document.add(logo);
+        // Fundo azul elegante
+        Rectangle pageSize = document.getPageSize();
+        PdfContentByte canvas = writer.getDirectContentUnder();
+        canvas.setColorFill(new BaseColor(200, 220, 240));
+        canvas.rectangle(0, 0, pageSize.getWidth(), pageSize.getHeight());
+        canvas.fill();
+
+        // Logo centralizada
+        try (InputStream logoStream = getClass().getResourceAsStream("/assets/BASIC LOGO.png")) {
+            if (logoStream != null) {
+                Image logo = Image.getInstance(IOUtils.toByteArray(logoStream));
+                logo.setAlignment(Element.ALIGN_CENTER);
+                logo.scaleToFit(180, 90);
+                document.add(logo);
+            }
         } catch (Exception e) {
-            System.err.println("Erro ao carregar a logo: " + e.getMessage());
+            System.err.println("Erro ao carregar logo: " + e.getMessage());
         }
 
-        // Estilização de fontes
-        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, BaseColor.BLACK);
-        Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12, BaseColor.BLACK);
-
-        // Título centralizado
-        Paragraph title = new Paragraph("Ordem de Serviço", titleFont);
+        // Título
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
+        Paragraph title = new Paragraph("ORDEM DE SERVIÇO", titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingBefore(10);
         title.setSpacingAfter(10);
         document.add(title);
 
-        // Adiciona os detalhes do cliente em uma tabela
-        PdfPTable table = new PdfPTable(2); // 2 colunas
-        table.setWidthPercentage(100);
-        table.setSpacingBefore(10f);
-        table.setSpacingAfter(10f);
+        // Moldura branca com bordas arredondadas
+        PdfPTable dadosBox = new PdfPTable(2);
+        dadosBox.setWidthPercentage(100);
+        dadosBox.setSpacingBefore(10f);
+        dadosBox.setSpacingAfter(15f);
+        dadosBox.getDefaultCell().setBorder(Rectangle.NO_BORDER);
 
-        table.addCell(new PdfPCell(new Paragraph("Nome do Cliente:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getNomeCliente(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Endereço:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getEndereco(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Número:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getNumero(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Cidade:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getCidade(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Número do Contrato:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getNumeroContrato(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Email do Cliente:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getEmailCliente(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Nome do Atendente:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getNomeAtendente(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Supervisor:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getSupervisor(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Tipo de Atendimento:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getTipoAtendimento(), normalFont)));
-        table.addCell(new PdfPCell(new Paragraph("Observação:", titleFont)));
-        table.addCell(new PdfPCell(new Paragraph(ordemDeServicoModel.getObservacao(), normalFont)));
+        Font labelFont = new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD);
+        Font valueFont = new Font(Font.FontFamily.HELVETICA, 11);
 
-        document.add(table);
+        addCell("Nome do Cliente:", ordem.getNomeCliente(), dadosBox, labelFont, valueFont);
+        addCell("Endereço:", ordem.getEndereco(), dadosBox, labelFont, valueFont);
+        addCell("Número:", ordem.getNumero(), dadosBox, labelFont, valueFont);
+        addCell("Cidade:", ordem.getCidade(), dadosBox, labelFont, valueFont);
+        addCell("Número do Contrato:", ordem.getNumeroContrato(), dadosBox, labelFont, valueFont);
+        addCell("Email do Cliente:", ordem.getEmailCliente(), dadosBox, labelFont, valueFont);
+        addCell("Nome do Atendente:", ordem.getNomeAtendente(), dadosBox, labelFont, valueFont);
+        addCell("Supervisor:", ordem.getSupervisor(), dadosBox, labelFont, valueFont);
+        addCell("Tipo de Atendimento:", ordem.getTipoAtendimento(), dadosBox, labelFont, valueFont);
+        addCell("Observação:", ordem.getObservacao(), dadosBox, labelFont, valueFont);
 
-        // Adiciona a assinatura
-        if (ordemDeServicoModel.getAssinatura() != null && !ordemDeServicoModel.getAssinatura().isEmpty()) {
-            try {
-                String assinaturaBase64 = ordemDeServicoModel.getAssinatura().replaceFirst("^data:image/[^;]+;base64,", "");
-                byte[] assinaturaBytes = Base64.getDecoder().decode(assinaturaBase64);
-                Image assinatura = Image.getInstance(assinaturaBytes);
-                assinatura.setAlignment(Element.ALIGN_CENTER);
-                assinatura.scaleToFit(200, 100); // Ajusta o tamanho da assinatura
-                document.add(new Paragraph("Assinatura:", titleFont));
-                document.add(assinatura);
-            } catch (Exception e) {
-                System.err.println("Erro ao processar a assinatura: " + e.getMessage());
-            }
+        PdfPCell boxContainer = new PdfPCell(dadosBox);
+        boxContainer.setPadding(12f);
+        boxContainer.setBorder(Rectangle.BOX);
+        boxContainer.setBorderColor(BaseColor.LIGHT_GRAY);
+        boxContainer.setBackgroundColor(BaseColor.WHITE);
+        boxContainer.setColspan(2);
+        document.add(boxContainer);
+
+        // Assinatura
+        if (ordem.getAssinatura() != null && !ordem.getAssinatura().isEmpty()) {
+            Paragraph assinaturaTitle = new Paragraph("Assinatura:", labelFont);
+            assinaturaTitle.setSpacingBefore(10f);
+            document.add(assinaturaTitle);
+
+            byte[] assinaturaBytes = Base64.getDecoder().decode(ordem.getAssinatura().replaceFirst("^data:image/[^;]+;base64,", ""));
+            Image assinatura = Image.getInstance(assinaturaBytes);
+            assinatura.scaleToFit(200, 100);
+
+            PdfPCell assinaturaCell = new PdfPCell(assinatura);
+            assinaturaCell.setBorder(Rectangle.BOX);
+            assinaturaCell.setBorderColor(BaseColor.GRAY);
+            assinaturaCell.setPadding(10f);
+            assinaturaCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            PdfPTable assinaturaTable = new PdfPTable(1);
+            assinaturaTable.setWidthPercentage(100);
+            assinaturaTable.setSpacingBefore(10f);
+            assinaturaTable.addCell(assinaturaCell);
+            document.add(assinaturaTable);
         }
 
-        // Adiciona as fotos do atendimento lado a lado
-        if (fotosBase64 != null) {
-            PdfPTable fotosTable = new PdfPTable(2); // 2 colunas para as fotos
+        // Fotos
+        if (fotosBase64 != null && !fotosBase64.isEmpty()) {
+            Paragraph fotosTitle = new Paragraph("Fotos do Atendimento:", labelFont);
+            fotosTitle.setSpacingBefore(15f);
+            document.add(fotosTitle);
+
+            PdfPTable fotosTable = new PdfPTable(2);
             fotosTable.setWidthPercentage(100);
             fotosTable.setSpacingBefore(10f);
-            fotosTable.setSpacingAfter(10f);
 
-            for (String fotoBase64 : fotosBase64) {
+            int count = 0;
+            for (String base64 : fotosBase64) {
                 try {
-                    String fotoData = fotoBase64.replaceFirst("^data:image/[^;]+;base64,", "");
-                    byte[] fotoBytes = Base64.getDecoder().decode(fotoData);
+                    byte[] fotoBytes = Base64.getDecoder().decode(base64.replaceFirst("^data:image/[^;]+;base64,", ""));
                     Image foto = Image.getInstance(fotoBytes);
-                    foto.scaleToFit(300, 200); // Ajusta o tamanho da foto
-                    fotosTable.addCell(foto);
+                    foto.scaleToFit(250, 180);
+
+                    PdfPCell fotoCell = new PdfPCell(foto);
+                    fotoCell.setPadding(6f);
+                    fotoCell.setBorder(Rectangle.BOX);
+                    fotoCell.setBorderColor(BaseColor.GRAY);
+                    fotosTable.addCell(fotoCell);
+
+                    count++;
+                    if (count % 6 == 0) {
+                        document.add(fotosTable);
+                        document.newPage();
+                        fotosTable = new PdfPTable(2);
+                        fotosTable.setWidthPercentage(100);
+                        fotosTable.setSpacingBefore(10f);
+                    }
+
                 } catch (Exception e) {
-                    System.err.println("Erro ao processar a foto: " + e.getMessage());
+                    System.err.println("Erro ao processar imagem: " + e.getMessage());
                 }
             }
 
-            document.add(fotosTable);
+            if (count % 6 != 0) {
+                document.add(fotosTable);
+            }
         }
 
         document.close();
         return out;
     }
 
+    private void addCell(String label, String value, PdfPTable table, Font labelFont, Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(Rectangle.NO_BORDER);
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "-", valueFont));
+        valueCell.setBorder(Rectangle.NO_BORDER);
+        table.addCell(valueCell);
+    }
 }

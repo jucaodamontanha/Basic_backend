@@ -17,6 +17,7 @@ public class CadastroModel {
     private String senha;
     private String email;
     private String funcao;
+    private String tokenNotificacao;
 
     public CadastroModel() {
     }
@@ -28,6 +29,7 @@ public class CadastroModel {
         this.senha = senha;
         this.email = email;
         this.funcao = funcao;
+        this.tokenNotificacao = tokenNotificacao;
     }
 
     @Override
@@ -90,6 +92,14 @@ public class CadastroModel {
 
     public void setFuncao(String funcao) {
         this.funcao = funcao;
+    }
+
+    public String getTokenNotificacao() {
+        return tokenNotificacao;
+    }
+
+    public void setTokenNotificacao(String tokenNotificacao) {
+        this.tokenNotificacao = tokenNotificacao;
     }
 
     @Override

@@ -16,11 +16,14 @@ public class CadastroService {
     public CadastroService(CadastroRepository cadastroRepository) {
         this.cadastroRepository = cadastroRepository;
     }
-    public List<CadastroModel> listarTodos(){
-        return  cadastroRepository.findAll();
+
+    public List<CadastroModel> listarTodos() {
+        return cadastroRepository.findAll();
     }
+
     /**
      * Salva um novo cadastro.
+     *
      * @param cadastroModel Cadastro a ser salvo.
      * @return Cadastro salvo.
      */
@@ -30,6 +33,7 @@ public class CadastroService {
 
     /**
      * Busca um cadastro pelo ID.
+     *
      * @param id ID do cadastro.
      * @return Optional contendo o cadastro, se encontrado.
      */
@@ -39,7 +43,8 @@ public class CadastroService {
 
     /**
      * Atualiza um cadastro existente.
-     * @param id ID do cadastro a ser atualizado.
+     *
+     * @param id            ID do cadastro a ser atualizado.
      * @param cadastroModel Dados atualizados do cadastro.
      * @return Cadastro atualizado.
      * @throws CadastroNotFoundException Se o cadastro não for encontrado.
@@ -54,6 +59,7 @@ public class CadastroService {
 
     /**
      * Deleta um cadastro pelo ID.
+     *
      * @param id ID do cadastro a ser deletado.
      */
     public void deletar(Long id) {
@@ -62,6 +68,7 @@ public class CadastroService {
 
     /**
      * Autentica um usuário pelo email e senha.
+     *
      * @param email Email do usuário.
      * @param senha Senha do usuário.
      * @return CadastroModel do usuário autenticado, ou null se não autenticado.
@@ -76,6 +83,7 @@ public class CadastroService {
 
     /**
      * Lista todos os supervisores.
+     *
      * @return Lista de NomeCompletoDTO com a função de supervisor.
      */
     public List<NomeCompletoDTO> listarSupervisores() {
@@ -87,6 +95,7 @@ public class CadastroService {
 
     /**
      * Lista todos os técnicos.
+     *
      * @return Lista de NomeCompletoDTO com a função de técnico.
      */
     public List<NomeCompletoDTO> listarTecnicos() {
@@ -95,4 +104,9 @@ public class CadastroService {
                 .map(cadastro -> new NomeCompletoDTO(cadastro.getNomeCompleto()))
                 .collect(Collectors.toList());
     }
+
+    public List<CadastroModel> buscarPorFuncao(String supervisor) {
+        return cadastroRepository.findByFuncao(supervisor);
+    }
+
 }

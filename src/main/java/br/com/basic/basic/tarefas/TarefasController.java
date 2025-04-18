@@ -1,5 +1,7 @@
 package br.com.basic.basic.tarefas;
+import br.com.basic.basic.cadastro.CadastroModel;
 import br.com.basic.basic.cadastro.CadastroNotFoundException;
+import br.com.basic.basic.cadastro.CadastroService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,8 @@ public class TarefasController {
 
     private static final Logger logger = LoggerFactory.getLogger(TarefasController.class);
     private final TarefasService tarefasService;
+    private NotificacaoService notificacaoService;
+    private CadastroService cadastroService;
 
     @Autowired
     public TarefasController(TarefasService tarefasService) {
@@ -38,8 +42,24 @@ public class TarefasController {
 
     @PostMapping("/tarefa")
     public ResponseEntity<String> createTarefa(@RequestBody TarefasModel tarefasModel) {
+        // Salvar a tarefa no banco de dados
         TarefasModel saveTarefa = tarefasService.salvar(tarefasModel);
         logger.info("Criando nova tarefa: {}", saveTarefa);
+
+        // Buscar supervisores cadastrados
+        List<CadastroModel> supervisores = cadastroService.buscarPorFuncao("supervisor");
+
+        // Enviar notificações para os supervisores
+        for (CadastroModel supervisor : supervisores) {
+            if (supervisor.getTokenNotificacao() != null) {
+                notificacaoService.enviarNotificacao(
+                        supervisor.getTokenNotificacao(),
+                        "Nova Tarefa Criada",
+                        "Uma nova tarefa foi atribuída. Verifique os detalhes."
+                );
+            }
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body("Tarefa cadastrada com sucesso!");
     }
 
