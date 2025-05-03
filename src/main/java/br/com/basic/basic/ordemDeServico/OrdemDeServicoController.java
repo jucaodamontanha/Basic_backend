@@ -56,10 +56,13 @@ public class OrdemDeServicoController {
         String subject = "Ordem de Serviço - " + ordemDeServicoModel.getCidade() + " - " + ordemDeServicoModel.getNumeroContrato();
         String[] to = {"eng.linekerx@gmail.com", ordemDeServicoModel.getEmailCliente()};
 
-        emailService.enviarEmailComAnexo(to, subject, "Segue em anexo a ordem de serviço.", pdfContent);
+        // Nova chamada sem texto direto (usa template HTML)
+        emailService.enviarEmailComAnexo(to, subject, pdfContent);
 
         return ResponseEntity.ok().build();
     }
+
+
     @GetMapping("/os")
     public ResponseEntity<List<OrdermDeServicoModel>> getAllOs() {
         List<OrdermDeServicoModel> ordensDeServico = ordemDeServicoService.buscarTodas();
