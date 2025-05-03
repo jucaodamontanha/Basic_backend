@@ -16,9 +16,13 @@ import java.util.Optional;
 @RequestMapping("/")
 public class TarefasController {
 
+    @Autowired
     private static final Logger logger = LoggerFactory.getLogger(TarefasController.class);
+    @Autowired
     private final TarefasService tarefasService;
+    @Autowired
     private NotificacaoService notificacaoService;
+    @Autowired
     private CadastroService cadastroService;
 
     @Autowired

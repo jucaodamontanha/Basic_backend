@@ -1,5 +1,8 @@
 package br.com.basic.basic.tarefas;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,8 +22,14 @@ public class NotificacaoService {
                 "body", mensagem
         );
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(notificacao, headers);
+
         try {
-            restTemplate.postForEntity(EXPO_PUSH_API_URL, notificacao, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(EXPO_PUSH_API_URL, request, String.class);
+            System.out.println("Resposta da API do Expo: " + response.getBody());
         } catch (Exception e) {
             System.err.println("Erro ao enviar notificação: " + e.getMessage());
         }

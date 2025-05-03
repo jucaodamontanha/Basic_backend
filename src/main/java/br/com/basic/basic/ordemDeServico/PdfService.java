@@ -8,137 +8,155 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class PdfService {
 
-    public ByteArrayOutputStream gerarPdf(OrdermDeServicoModel ordem, List<String> fotosBase64) throws DocumentException, IOException {
+    public ByteArrayOutputStream gerarPdf(OrdermDeServicoModel ordemDeServicoModel, List<String> fotosBase64) throws DocumentException, IOException {
         Document document = new Document(PageSize.A4, 36, 36, 36, 36);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         PdfWriter writer = PdfWriter.getInstance(document, out);
         document.open();
 
-        // Fundo azul elegante
+        // Fundo da página
         Rectangle pageSize = document.getPageSize();
         PdfContentByte canvas = writer.getDirectContentUnder();
-        canvas.setColorFill(new BaseColor(200, 220, 240));
+        canvas.setColorFill(new BaseColor(220, 235, 250)); // azul suave
         canvas.rectangle(0, 0, pageSize.getWidth(), pageSize.getHeight());
         canvas.fill();
 
-        // Logo centralizada
-        try (InputStream logoStream = getClass().getResourceAsStream("/assets/BASIC LOGO.png")) {
+        // Data da OS
+        Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.DARK_GRAY);
+        Paragraph dataParagraph = new Paragraph("Data: " + new SimpleDateFormat("dd/MM/yyyy").format(new Date()), dateFont);
+        dataParagraph.setAlignment(Element.ALIGN_RIGHT);
+        document.add(dataParagraph);
+
+        // Logo centralizado
+        try {
+            InputStream logoStream = getClass().getResourceAsStream("/assets/logoBasic.png");
             if (logoStream != null) {
-                Image logo = Image.getInstance(IOUtils.toByteArray(logoStream));
+                byte[] logoBytes = IOUtils.toByteArray(logoStream);
+                Image logo = Image.getInstance(logoBytes);
                 logo.setAlignment(Element.ALIGN_CENTER);
                 logo.scaleToFit(180, 90);
                 document.add(logo);
             }
         } catch (Exception e) {
-            System.err.println("Erro ao carregar logo: " + e.getMessage());
+            System.err.println("Erro ao carregar a logo: " + e.getMessage());
         }
 
         // Título
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.BLACK);
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, BaseColor.BLACK);
         Paragraph title = new Paragraph("ORDEM DE SERVIÇO", titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingBefore(10);
-        title.setSpacingAfter(10);
+        title.setSpacingAfter(15);
         document.add(title);
 
-        // Moldura branca com bordas arredondadas
-        PdfPTable dadosBox = new PdfPTable(2);
-        dadosBox.setWidthPercentage(100);
-        dadosBox.setSpacingBefore(10f);
-        dadosBox.setSpacingAfter(15f);
-        dadosBox.getDefaultCell().setBorder(Rectangle.NO_BORDER);
+        // Moldura com dados
+        PdfPTable borderTable = new PdfPTable(1);
+        borderTable.setWidthPercentage(100);
+        PdfPCell borderedCell = new PdfPCell();
+        borderedCell.setPadding(10);
+        borderedCell.setBorder(Rectangle.BOX);
+        borderedCell.setBorderColor(BaseColor.LIGHT_GRAY);
+        borderedCell.setBackgroundColor(BaseColor.WHITE);
 
-        Font labelFont = new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD);
-        Font valueFont = new Font(Font.FontFamily.HELVETICA, 11);
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, BaseColor.BLACK);
+        Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 11, BaseColor.BLACK);
 
-        addCell("Nome do Cliente:", ordem.getNomeCliente(), dadosBox, labelFont, valueFont);
-        addCell("Endereço:", ordem.getEndereco(), dadosBox, labelFont, valueFont);
-        addCell("Número:", ordem.getNumero(), dadosBox, labelFont, valueFont);
-        addCell("Cidade:", ordem.getCidade(), dadosBox, labelFont, valueFont);
-        addCell("Número do Contrato:", ordem.getNumeroContrato(), dadosBox, labelFont, valueFont);
-        addCell("Email do Cliente:", ordem.getEmailCliente(), dadosBox, labelFont, valueFont);
-        addCell("Nome do Atendente:", ordem.getNomeAtendente(), dadosBox, labelFont, valueFont);
-        addCell("Supervisor:", ordem.getSupervisor(), dadosBox, labelFont, valueFont);
-        addCell("Tipo de Atendimento:", ordem.getTipoAtendimento(), dadosBox, labelFont, valueFont);
-        addCell("Observação:", ordem.getObservacao(), dadosBox, labelFont, valueFont);
+        addCell("Nome do Cliente:", ordemDeServicoModel.getNomeCliente(), table, labelFont, valueFont);
+        addCell("Endereço:", ordemDeServicoModel.getEndereco(), table, labelFont, valueFont);
+        addCell("Número:", ordemDeServicoModel.getNumero(), table, labelFont, valueFont);
+        addCell("Cidade:", ordemDeServicoModel.getCidade(), table, labelFont, valueFont);
+        addCell("Número do Contrato:", ordemDeServicoModel.getNumeroContrato(), table, labelFont, valueFont);
+        addCell("Email do Cliente:", ordemDeServicoModel.getEmailCliente(), table, labelFont, valueFont);
+        addCell("Nome do Atendente:", ordemDeServicoModel.getNomeAtendente(), table, labelFont, valueFont);
+        addCell("Supervisor:", ordemDeServicoModel.getSupervisor(), table, labelFont, valueFont);
+        addCell("Tipo de Atendimento:", ordemDeServicoModel.getTipoAtendimento(), table, labelFont, valueFont);
+        addCell("Observação:", ordemDeServicoModel.getObservacao(), table, labelFont, valueFont);
 
-        PdfPCell boxContainer = new PdfPCell(dadosBox);
-        boxContainer.setPadding(12f);
-        boxContainer.setBorder(Rectangle.BOX);
-        boxContainer.setBorderColor(BaseColor.LIGHT_GRAY);
-        boxContainer.setBackgroundColor(BaseColor.WHITE);
-        boxContainer.setColspan(2);
-        document.add(boxContainer);
+        borderedCell.addElement(table);
+        borderTable.addCell(borderedCell);
+        document.add(borderTable);
 
         // Assinatura
-        if (ordem.getAssinatura() != null && !ordem.getAssinatura().isEmpty()) {
+        if (ordemDeServicoModel.getAssinatura() != null && !ordemDeServicoModel.getAssinatura().isEmpty()) {
             Paragraph assinaturaTitle = new Paragraph("Assinatura:", labelFont);
-            assinaturaTitle.setSpacingBefore(10f);
+            assinaturaTitle.setSpacingBefore(15f);
             document.add(assinaturaTitle);
 
-            byte[] assinaturaBytes = Base64.getDecoder().decode(ordem.getAssinatura().replaceFirst("^data:image/[^;]+;base64,", ""));
+            String assinaturaBase64 = ordemDeServicoModel.getAssinatura().replaceFirst("^data:image/[^;]+;base64,", "");
+            byte[] assinaturaBytes = Base64.getDecoder().decode(assinaturaBase64);
             Image assinatura = Image.getInstance(assinaturaBytes);
-            assinatura.scaleToFit(200, 100);
+            assinatura.scaleToFit(180, 90);
 
-            PdfPCell assinaturaCell = new PdfPCell(assinatura);
-            assinaturaCell.setBorder(Rectangle.BOX);
-            assinaturaCell.setBorderColor(BaseColor.GRAY);
-            assinaturaCell.setPadding(10f);
-            assinaturaCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             PdfPTable assinaturaTable = new PdfPTable(1);
-            assinaturaTable.setWidthPercentage(100);
-            assinaturaTable.setSpacingBefore(10f);
+            assinaturaTable.setWidthPercentage(50);
+            PdfPCell assinaturaCell = new PdfPCell(assinatura);
+            assinaturaCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            assinaturaCell.setPadding(10);
+            assinaturaCell.setBorder(Rectangle.BOX);
+            assinaturaCell.setBorderColor(BaseColor.LIGHT_GRAY);
+            assinaturaCell.setBackgroundColor(BaseColor.WHITE);
             assinaturaTable.addCell(assinaturaCell);
+            assinaturaTable.setHorizontalAlignment(Element.ALIGN_CENTER);
             document.add(assinaturaTable);
         }
 
         // Fotos
         if (fotosBase64 != null && !fotosBase64.isEmpty()) {
             Paragraph fotosTitle = new Paragraph("Fotos do Atendimento:", labelFont);
-            fotosTitle.setSpacingBefore(15f);
+            fotosTitle.setSpacingBefore(20f);
             document.add(fotosTitle);
 
-            PdfPTable fotosTable = new PdfPTable(2);
+            int fotosPorLinha = 2;
+            int count = 0;
+            PdfPTable fotosTable = new PdfPTable(fotosPorLinha);
             fotosTable.setWidthPercentage(100);
             fotosTable.setSpacingBefore(10f);
 
-            int count = 0;
-            for (String base64 : fotosBase64) {
+            for (String fotoBase64 : fotosBase64) {
                 try {
-                    byte[] fotoBytes = Base64.getDecoder().decode(base64.replaceFirst("^data:image/[^;]+;base64,", ""));
+                    String fotoData = fotoBase64.replaceFirst("^data:image/[^;]+;base64,", "");
+                    byte[] fotoBytes = Base64.getDecoder().decode(fotoData);
                     Image foto = Image.getInstance(fotoBytes);
                     foto.scaleToFit(250, 180);
-
-                    PdfPCell fotoCell = new PdfPCell(foto);
-                    fotoCell.setPadding(6f);
-                    fotoCell.setBorder(Rectangle.BOX);
-                    fotoCell.setBorderColor(BaseColor.GRAY);
-                    fotosTable.addCell(fotoCell);
-
+                    PdfPCell cell = new PdfPCell(foto);
+                    cell.setBorder(Rectangle.BOX);
+                    cell.setBorderColor(BaseColor.LIGHT_GRAY);
+                    cell.setPadding(5f);
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    fotosTable.addCell(cell);
                     count++;
-                    if (count % 6 == 0) {
+
+                    if (count % 4 == 0) {
                         document.add(fotosTable);
                         document.newPage();
-                        fotosTable = new PdfPTable(2);
+                        fotosTable = new PdfPTable(fotosPorLinha);
                         fotosTable.setWidthPercentage(100);
                         fotosTable.setSpacingBefore(10f);
                     }
-
                 } catch (Exception e) {
-                    System.err.println("Erro ao processar imagem: " + e.getMessage());
+                    System.err.println("Erro ao processar foto: " + e.getMessage());
                 }
             }
 
-            if (count % 6 != 0) {
+            if (count % 4 != 0) {
                 document.add(fotosTable);
             }
         }
+
+        // Rodapé
+        Paragraph rodape = new Paragraph("Lineker Tecnologia - eng.linekerx@gmail.com", dateFont);
+        rodape.setAlignment(Element.ALIGN_CENTER);
+        rodape.setSpacingBefore(30f);
+        document.add(rodape);
 
         document.close();
         return out;
