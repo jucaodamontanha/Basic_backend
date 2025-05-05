@@ -34,7 +34,7 @@ public class EmailService {
         helper.setText(html, true); // true para HTML
 
         // Logo incorporada via Content-ID (cid)
-        ClassPathResource logo = new ClassPathResource("static/images/logo.png"); // ou onde você salvar
+        ClassPathResource logo = new ClassPathResource("imagens/logo.png"); // ou onde você salvar
         helper.addInline("logoBasicTelecom", logo);
 
         // Anexo do PDF

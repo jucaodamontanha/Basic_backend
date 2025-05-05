@@ -37,7 +37,7 @@ public class PdfService {
 
         // Logo centralizado
         try {
-            InputStream logoStream = getClass().getResourceAsStream("/assets/logoBasic.png");
+            InputStream logoStream = getClass().getClassLoader().getResourceAsStream("imagens/logo.png");
             if (logoStream != null) {
                 byte[] logoBytes = IOUtils.toByteArray(logoStream);
                 Image logo = Image.getInstance(logoBytes);
