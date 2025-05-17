@@ -3,6 +3,7 @@ package br.com.basic.basic.cadastro;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -102,6 +103,7 @@ public class CadastroService {
         return cadastroRepository.findByFuncao("tecnico")
                 .stream()
                 .map(cadastro -> new NomeCompletoDTO(cadastro.getNomeCompleto()))
+                .sorted(Comparator.comparing(NomeCompletoDTO::getNomeCompleto))
                 .collect(Collectors.toList());
     }
 
