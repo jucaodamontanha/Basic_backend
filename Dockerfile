@@ -1,31 +1,27 @@
-FROM ubuntu:latest AS build
+# Etapa de build com Maven e JDK já prontos (mais leve e estável)
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Atualizar e instalar dependências em um único comando RUN
-RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk maven && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Definir o diretório de trabalho
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar todos os arquivos para o diretório de trabalho
+# Copiar os arquivos do projeto
 COPY . .
 
-# Construir o projeto Maven
-RUN mvn clean install
+# Construir o projeto e pular os testes para agilizar
+RUN mvn clean install -DskipTests
 
-# Usar uma imagem mais leve para a fase de execução
+
+# Etapa final: apenas a JDK e o .jar pronto
 FROM openjdk:17-jdk-slim
 
-# Definir o diretório de trabalho
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Expor a porta 8080
+# Expor a porta padrão do Spring Boot
 EXPOSE 8080
 
-# Copiar o jar gerado da fase de build
-COPY --from=build /app/target/basic-0.0.1-SNAPSHOT.jar app.jar
+# Copiar o jar gerado na fase anterior
+COPY --from=build /app/target/*.jar app.jar
 
-# Definir o ponto de entrada
+# Comando para rodar a aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]
